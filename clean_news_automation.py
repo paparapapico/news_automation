@@ -1460,6 +1460,10 @@ async def scrape_news_api(request: NewsRequest):
         logger.error(f"뉴스 수집 API 오류: {e}")
         return {"success": False, "error": str(e)}
 
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+
 @app.post("/api/create-reel/{news_id}")
 async def create_reel_api(news_id: int, request: ReelsRequest):
     """릴스 제작 API"""
