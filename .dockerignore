@@ -1,0 +1,53 @@
+# .dockerignore for Railway
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# 로컬 환경 파일
+.env.local
+.env.development
+.env.test
+
+# IDE 파일
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 운영체제 파일
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 임시 파일
+temp/
+uploads/
+generated_videos/
+generated_audio/
+*.db
+*.sqlite3
+
+# 불필요한 파일들
+render.yaml
+README.md
