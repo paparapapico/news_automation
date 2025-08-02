@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎬 NEWS AUTOMATION - 릴스 자동화 대시보드</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #06b6d4;
+            --dark: #1f2937;
+            --light: #f8fafc;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            color: var(--dark);
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            margin: 20px;
+            padding: 32px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            min-height: calc(100vh - 120px);
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 24px;
+            color: white;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 8px 0;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+            color: white;
+        }
+
+        .btn-outline-custom {
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            border-radius: 12px;
+            padding: 8px 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-custom:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .card-custom {
+            background: white;
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .card-header-custom {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 16px 24px;
+            border: none;
+            font-weight: 600;
+        }
+
+        .log-terminal {
+            background: #1a1a1a;
+            color: #00ff00;
+            border-radius: 12px;
+            padding: 20px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+            height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            border: 1px solid #333;
+        }
+
+        .log-terminal::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .log-terminal::-webkit-scrollbar-track {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        .log-terminal::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 4px;
+        }
+
+        .news-item {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .news-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .viral-badge {
+            background: linear-gradient(135deg, #ff6b6b, #ffa500);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .category-badge {
+            background: linear-gradient(135deg, var(--info), var(--primary));
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .status-online { background: var(--success); }
+        .status-warning { background: var(--warning); }
+        .status-offline { background: var(--danger); }
+
+        .nav-pills .nav-link {
+            border-radius: 12px;
+            margin: 0 4px;
+            padding: 12px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-pills .nav-link.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .reel-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .reel-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .reel-video {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading-spinner {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .progress-bar-custom {
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 로딩 오버레이 -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;"></div>
+            <h5 id="loadingText">처리 중...</h5>
+        </div>
+    </div>
+
+    <!-- 네비게이션 -->
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-4" href="#">
+                <i class="fas fa-video text-primary me-2"></i>
+                NEWS AUTOMATION
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text d-flex align-items-center">
+                    <span id="statusDot" class="status-dot status-online"></span>
+                    <span id="statusText">시스템 정상</span>
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 메인 컨테이너 -->
+    <div class="main-container">
+        <!-- 헤더 -->
+        <div class="text-center mb-5">
+            <h1 class="display-5 fw-bold mb-3">
+                <i class="fas fa-newspaper text-primary me-3"></i>
+                AI 뉴스 & 릴스 자동화 대시보드
+            </h1>
+            <p class="lead text-muted">실시간 뉴스 수집 → AI 릴스 제작 → Instagram 자동 업로드</p>
+        </div>
+
+        <!-- 통계 카드 -->
+        <div class="row g-4 mb-5">
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card fade-in">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, var(--primary), var(--info));">
+                        <i class="fas fa-newspaper"></i>
+                    </div>
+                    <div class="stat-number text-primary" id="totalNews">0</div>
+                    <div class="stat-label">수집된 뉴스</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card fade-in">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, var(--warning), var(--secondary));">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <div class="stat-number text-warning" id="totalReels">0</div>
+                    <div class="stat-label">제작된 릴스</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card fade-in">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, var(--success), var(--info));">
+                        <i class="fas fa-upload"></i>
+                    </div>
+                    <div class="stat-number text-success" id="postedContent">0</div>
+                    <div class="stat-label">업로드 완료</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card fade-in">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, var(--danger), var(--warning));">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="stat-number text-danger" id="avgViralScore">0.0</div>
+                    <div class="stat-label">평균 바이럴 점수</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 탭 네비게이션 -->
+        <ul class="nav nav-pills justify-content-center mb-4" id="mainTabs">
+            <li class="nav-item">
+                <a class="nav-link active" data-bs-toggle="pill" href="#automationTab">
+                    <i class="fas fa-robot me-2"></i>자동화 실행
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="pill" href="#newsTab">
+                    <i class="fas fa-newspaper me-2"></i>뉴스 관리
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="pill" href="#reelsTab">
+                    <i class="fas fa-video me-2"></i>릴스 관리
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="pill" href="#analyticsTab">
+                    <i class="fas fa-chart-line me-2"></i>성과 분석
+                </a>
+            </li>
+        </ul>
+
+        <!-- 탭 콘텐츠 -->
+        <div class="tab-content">
+            <!-- 자동화 실행 탭 -->
+            <div class="tab-pane fade show active" id="automationTab">
+                <div class="row g-4">
+                    <!-- 원클릭 자동화 -->
+                    <div class="col-lg-6">
+                        <div class="card-custom">
+                            <div class="card-header-custom">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-rocket me-2"></i>원클릭 자동화
+                                </h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <p class="text-muted mb-4">뉴스 수집부터 릴스 제작, Instagram 업로드까지 모든 과정을 자동으로 실행합니다.</p>
+                                <button class="btn btn-action btn-lg w-100" onclick="runFullAutomation()">
+                                    <i class="fas fa-play me-2"></i>전체 자동화 실행
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 단계별 실행 -->
+                    <div class="col-lg-6">
+                        <div class="card-custom">
+                            <div class="card-header-custom">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-list-ol me-2"></i>단계별 실행
+                                </h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="d-grid gap-3">
+                                    <button class="btn btn-outline-custom" onclick="scrapeNews()">
+                                        <i class="fas fa-search me-2"></i>1. 뉴스 수집
+                                    </button>
+                                    <button class="btn btn-outline-custom" onclick="createReels()">
+                                        <i class="fas fa-video me-2"></i>2. 릴스 제작
+                                    </button>
+                                    <button class="btn btn-outline-custom" onclick="uploadToInstagram()">
+                                        <i class="fab fa-instagram me-2"></i>3. Instagram 업로드
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 실시간 로그 -->
+                    <div class="col-12">
+                        <div class="card-custom">
+                            <div class="card-header-custom">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-terminal me-2"></i>실시간 로그
+                                </h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div id="logTerminal" class="log-terminal">
+[시스템] NEWS AUTOMATION 시작됨
+[정보] 시스템 준비 완료. 자동화를 시작하세요...
+
+</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 뉴스 관리 탭 -->
+            <div class="tab-pane fade" id="newsTab">
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <div class="card-custom">
+                            <div class="card-header-custom">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-fire me-2"></i>트렌딩 뉴스
+                                </h5>
+                            </div>
+                            <div class="card-body p-4" id="newsContainer">
+                                <div class="text-center py-5">
+                                    <div class="spinner-border text-primary mb-3"></div>
+                                    <p class="text-muted">트렌딩 뉴스를 불러오는 중...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card-custom">
+                            <div class="card-header-custom">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-cog me-2"></i>수집 설정
+                                </h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">카테고리</label>
+                                    <select class="form-select" id="categorySelect">
+                                        <option value="stock">주식·경제</option>
+                                        <option value="politics">정치</option>
+                                        <option value="international">해외 이슈</option>
+                                        <option value="domestic">국내 이슈</option>
+                                        <option value="technology">기술·IT</option>
+                                        <option value="entertainment">연예·스포츠</option>
+                                    </select>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold">수집 개수</label>
+                                    <input type="number" class="form-control" id="maxArticles" value="5" min="1" max="20">
+                                </div>
+                                <button class="btn btn-action w-100" onclick="scrapeCategoryNews()">
+                                    <i class="fas fa-download me-2"></i>뉴스 수집 시작
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 릴스 관리 탭 -->
+            <div class="tab-pane fade" id="reelsTab">
+                <div class="card-custom">
+                    <div class="card-header-custom">
+                        <h5 class="mb-0">
+                            <i class="fas fa-film me-2"></i>최근 제작된 릴스
+                        </h5>
+                    </div>
+                    <div class="card-body p-4" id="reelsContainer">
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-warning mb-3"></div>
+                            <p class="text-muted">릴스 목록을 불러오는 중...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 성과 분석 탭 -->
+            <div class="tab-pane fade" id="analyticsTab">
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="card-custom">
+                            <div class="card-header-custom">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-chart-bar me-2"></i>주간 성과
+                                </h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <canvas id="weeklyChart" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card-custom">
+                            <div class="card-header-custom">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-trophy me-2"></i>성과 요약
+                                </h5>
+                            </div>
+                            <div class="card-body p-4" id="performanceSummary">
+                                <div class="text-center py-3">
+                                    <div class="spinner-border text-info mb-3"></div>
+                                    <p class="text-muted">성과 데이터를 분석하는 중...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="card-custom">
+                            <div class="card-header-custom">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-tools me-2"></i>시스템 관리
+                                </h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="row g-3">
+                                    <div class="col-md-3">
+                                        <button class="btn btn-outline-custom w-100" onclick="testInstagram()">
+                                            <i class="fab fa-instagram me-2"></i>Instagram 테스트
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button class="btn btn-outline-custom w-100" onclick="cleanupFiles()">
+                                            <i class="fas fa-broom me-2"></i>파일 정리
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button class="btn btn-outline-custom w-100" onclick="refreshData()">
+                                            <i class="fas fa-sync me-2"></i>데이터 새로고침
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button class="btn btn-outline-custom w-100" onclick="clearAllData()">
+                                            <i class="fas fa-trash me-2"></i>데이터 초기화
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 모달들 -->
+    <!-- 뉴스 상세 모달 -->
+    <div class="modal fade" id="newsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="border-radius: 16px;">
+                <div class="modal-header" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border-radius: 16px 16px 0 0;">
+                    <h5 class="modal-title">뉴스 상세 정보</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4" id="newsModalBody">
+                    <!-- 뉴스 상세 내용 -->
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">닫기</button>
+                    <button type="button" class="btn btn-action" onclick="createReelFromNews()">
+                        <i class="fas fa-video me-2"></i>릴스 제작
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 릴스 미리보기 모달 -->
+    <div class="modal fade" id="reelModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="border-radius: 16px;">
+                <div class="modal-header" style="background: linear-gradient(135deg, var(--warning), var(--secondary)); color: white; border-radius: 16px 16px 0 0;">
+                    <h5 class="modal-title">릴스 미리보기</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center p-4" id="reelModalBody">
+                    <!-- 릴스 미리보기 -->
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">닫기</button>
+                    <button type="button" class="btn btn-action" onclick="uploadReelToInstagram()">
+                        <i class="fab fa-instagram me-2"></i>Instagram 업로드
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // 전역 변수
+        let currentNewsId = null;
+        let currentReelId = null;
+        let weeklyChart = null;
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSystemStatus();
+            loadTrendingNews();
+            loadRecentReels();
+            loadPerformanceAnalytics();
+            
+            // 5초마다 시스템 상태 업데이트
+            setInterval(loadSystemStatus, 5000);
+        });
+
+        // 로그 추가 함수
+        function addLog(message, type = 'info') {
+            const terminal = document.getElementById('logTerminal');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            let icon = 'ℹ️';
+            let color = '#00ff00';
+            
+            if (type === 'error') {
+                icon = '❌';
+                color = '#ff4444';
+            } else if (type === 'success') {
+                icon = '✅';
+                color = '#00ff88';
+            } else if (type === 'warning') {
+                icon = '⚠️';
+                color = '#ffaa00';
+            }
+            
+            const logEntry = `[${timestamp}] ${icon} ${message}\n`;
+            terminal.innerHTML += logEntry;
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        // 로딩 표시
+        function showLoading(text = '처리 중...') {
+            document.getElementById('loadingText').textContent = text;
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        // 시스템 상태 로드
+        async function loadSystemStatus() {
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                
+                if (data.status === 'healthy') {
+                    updateStatusIndicator('online', '시스템 정상');
+                    updateStatistics(data.statistics);
+                } else {
+                    updateStatusIndicator('offline', '시스템 오류');
+                }
+            } catch (error) {
+                updateStatusIndicator('warning', '연결 오류');
+                console.error('시스템 상태 로드 오류:', error);
+            }
+        }
+
+        // 상태 표시기 업데이트
+        function updateStatusIndicator(status, text) {
+            const dot = document.getElementById('statusDot');
+            const textEl = document.getElementById('statusText');
+            
+            dot.className = `status-dot status-${status}`;
+            textEl.textContent = text;
+        }
+
+        // 통계 업데이트
+        function updateStatistics(stats) {
+            document.getElementById('totalNews').textContent = stats.total_news || 0;
+            document.getElementById('totalReels').textContent = stats.total_reels || 0;
+            document.getElementById('postedContent').textContent = stats.posted_content || 0;
+            document.getElementById('avgViralScore').textContent = (stats.avg_viral_score || 0).toFixed(1);
+        }
+
+        // 전체 자동화 실행
+        async function runFullAutomation() {
+            showLoading('전체 자동화 실행 중...');
+            addLog('🚀 전체 자동화 프로세스를 시작합니다...', 'info');
+            
+            try {
+                const response = await fetch('/api/automation/full-reel-process', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                hideLoading();
+                
+                if (data.success) {
+                    addLog(`✅ 자동화 완료! 뉴스 ${data.results.scraped_news}개, 릴스 ${data.results.created_reels}개, 업로드 ${data.results.posted_reels}개`, 'success');
+                    
+                    if (data.results.errors && data.results.errors.length > 0) {
+                        data.results.errors.forEach(error => {
+                            addLog(`⚠️ ${error}`, 'warning');
+                        });
+                    }
+                    
+                    refreshAllData();
+                } else {
+                    addLog(`❌ 자동화 실패: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                hideLoading();
+                addLog(`❌ 자동화 오류: ${error.message}`, 'error');
+            }
+        }
+
+        // 뉴스 수집
+        async function scrapeNews() {
+            showLoading('뉴스 수집 중...');
+            addLog('📰 뉴스 수집을 시작합니다...', 'info');
+            
+            try {
+                const categories = ['stock', 'politics', 'international', 'domestic', 'technology', 'entertainment'];
+                let totalNews = 0;
+                
+                for (const category of categories) {
+                    const response = await fetch('/api/scrape-news', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ category: category, max_articles: 3 })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        totalNews += data.news.length;
+                        addLog(`✅ ${getCategoryName(category)}: ${data.news.length}개 뉴스 수집`, 'success');
+                    } else {
+                        addLog(`⚠️ ${getCategoryName(category)} 수집 실패: ${data.message}`, 'warning');
+                    }
+                }
+                
+                hideLoading();
+                addLog(`📊 총 ${totalNews}개의 새로운 뉴스를 수집했습니다`, 'success');
+                refreshAllData();
+                
+            } catch (error) {
+                hideLoading();
+                addLog(`❌ 뉴스 수집 오류: ${error.message}`, 'error');
+            }
+        }
+
+        // 카테고리별 뉴스 수집
+        async function scrapeCategoryNews() {
+            const category = document.getElementById('categorySelect').value;
+            const maxArticles = document.getElementById('maxArticles').value;
+            
+            showLoading(`${getCategoryName(category)} 뉴스 수집 중...`);
+            addLog(`📰 ${getCategoryName(category)} 카테고리에서 ${maxArticles}개 뉴스를 수집합니다...`, 'info');
+            
+            try {
+                const response = await fetch('/api/scrape-news', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        category: category,
+                        max_articles: parseInt(maxArticles)
+                    })
+                });
+                
+                const data = await response.json();
+                hideLoading();
+                
+                if (data.success) {
+                    addLog(`✅ ${data.news.length}개 뉴스 수집 완료 (최고 바이럴 점수: ${data.highest_viral_score || 0})`, 'success');
+                    refreshAllData();
+                } else {
+                    addLog(`❌ 뉴스 수집 실패: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                hideLoading();
+                addLog(`❌ 뉴스 수집 오류: ${error.message}`, 'error');
+            }
+        }
+
+        // 릴스 제작
+        async function createReels() {
+            showLoading('릴스 제작 중...');
+            addLog('🎬 고 바이럴 점수 뉴스로 릴스를 제작합니다...', 'info');
+            
+            try {
+                const newsResponse = await fetch('/api/news/trending?limit=3');
+                const newsData = await newsResponse.json();
+                
+                if (!newsData.success || newsData.trending_news.length === 0) {
+                    hideLoading();
+                    addLog('❌ 릴스 제작할 뉴스가 없습니다', 'error');
+                    return;
+                }
+                
+                let createdReels = 0;
+                
+                for (const news of newsData.trending_news) {
+                    try {
+                        addLog(`🎬 "${news.title.substring(0, 30)}..." 릴스 제작 중...`, 'info');
+                        
+                        const reelResponse = await fetch(`/api/create-reel/${news.id}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                news_id: news.id,
+                                video_style: 'trending',
+                                duration: 15,
+                                voice_speed: 1.2,
+                                include_captions: true,
+                                background_music: false
+                            })
+                        });
+                        
+                        const reelData = await reelResponse.json();
+                        
+                        if (reelData.success) {
+                            createdReels++;
+                            addLog(`✅ 릴스 제작 완료 (${reelData.file_size_mb}MB)`, 'success');
+                        } else {
+                            addLog(`❌ 릴스 제작 실패: ${reelData.message}`, 'error');
+                        }
+                        
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        
+                    } catch (error) {
+                        addLog(`❌ 릴스 제작 오류: ${error.message}`, 'error');
+                    }
+                }
+                
+                hideLoading();
+                addLog(`🎬 총 ${createdReels}개의 릴스를 제작했습니다`, 'success');
+                refreshAllData();
+                
+            } catch (error) {
+                hideLoading();
+                addLog(`❌ 릴스 제작 오류: ${error.message}`, 'error');
+            }
+        }
+
+        // Instagram 업로드
+        async function uploadToInstagram() {
+            showLoading('Instagram 업로드 중...');
+            addLog('📱 최근 릴스를 Instagram에 업로드합니다...', 'info');
+            
+            try {
+                const reelsResponse = await fetch('/api/reels/recent?limit=3');
+                const reelsData = await reelsResponse.json();
+                
+                if (!reelsData.success || reelsData.reels.length === 0) {
+                    hideLoading();
+                    addLog('❌ 업로드할 릴스가 없습니다', 'error');
+                    return;
+                }
+                
+                let uploadedReels = 0;
+                
+                for (const reel of reelsData.reels) {
+                    try {
+                        addLog(`📱 릴스 ID ${reel.id} Instagram 업로드 중...`, 'info');
+                        
+                        const uploadResponse = await fetch(`/api/post-reel-to-instagram/${reel.id}`, {
+                            method: 'POST'
+                        });
+                        
+                        const uploadData = await uploadResponse.json();
+                        
+                        if (uploadData.success) {
+                            uploadedReels++;
+                            addLog(`✅ Instagram 업로드 완료! Post ID: ${uploadData.post_id}`, 'success');
+                        } else {
+                            addLog(`❌ Instagram 업로드 실패: ${uploadData.message}`, 'error');
+                        }
+                        
+                        await new Promise(resolve => setTimeout(resolve, 10000));
+                        
+                    } catch (error) {
+                        addLog(`❌ Instagram 업로드 오류: ${error.message}`, 'error');
+                    }
+                }
+                
+                hideLoading();
+                addLog(`📱 총 ${uploadedReels}개의 릴스를 Instagram에 업로드했습니다`, 'success');
+                refreshAllData();
+                
+            } catch (error) {
+                hideLoading();
+                addLog(`❌ Instagram 업로드 오류: ${error.message}`, 'error');
+            }
+        }
+
+        // 트렌딩 뉴스 로드
+        async function loadTrendingNews() {
+            try {
+                const response = await fetch('/api/news/trending?limit=10');
+                const data = await response.json();
+                
+                const container = document.getElementById('newsContainer');
+                
+                if (data.success && data.trending_news.length > 0) {
+                    container.innerHTML = data.trending_news.map(news => `
+                        <div class="news-item fade-in" onclick="showNewsDetail(${news.id}, '${escapeHtml(news.title)}', '${escapeHtml(news.summary)}', '${news.category}', ${news.viral_score})">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-1 flex-grow-1">${news.title}</h6>
+                                <span class="viral-badge ms-2">${news.viral_score}</span>
+                            </div>
+                            <p class="text-muted mb-2">${news.summary}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="category-badge">${getCategoryName(news.category)}</span>
+                                <small class="text-muted">${formatDateTime(news.scraped_at)}</small>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = `
+                        <div class="text-center py-5">
+                            <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">트렌딩 뉴스가 없습니다</h5>
+                            <p class="text-muted">뉴스 수집을 먼저 실행해주세요.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('트렌딩 뉴스 로드 오류:', error);
+            }
+        }
+
+        // 최근 릴스 로드
+        async function loadRecentReels() {
+            try {
+                const response = await fetch('/api/reels/recent?limit=12');
+                const data = await response.json();
+                
+                const container = document.getElementById('reelsContainer');
+                
+                if (data.success && data.reels.length > 0) {
+                    container.innerHTML = `
+                        <div class="row g-4">
+                            ${data.reels.map(reel => `
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="reel-card fade-in">
+                                        <video class="reel-video" 
+                                               onclick="showReelDetail(${reel.id}, '${reel.video_url}', '${escapeHtml(reel.news_title)}', '${reel.style}', ${reel.duration})"
+                                               poster="${reel.video_url}">
+                                            <source src="${reel.video_url}" type="video/mp4">
+                                        </video>
+                                        <div class="p-3">
+                                            <h6 class="mb-2">${reel.news_title.substring(0, 50)}...</h6>
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span class="badge bg-warning">${reel.style}</span>
+                                                <small class="text-muted">${reel.duration}초</small>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <small class="text-muted">${reel.file_size_mb} MB</small>
+                                                <small class="text-muted">${formatDateTime(reel.created_at)}</small>
+                                            </div>
+                                            <button class="btn btn-action btn-sm w-100" onclick="uploadSingleReel(${reel.id})">
+                                                <i class="fab fa-instagram me-2"></i>Instagram 업로드
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div class="text-center py-5">
+                            <i class="fas fa-video fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">제작된 릴스가 없습니다</h5>
+                            <p class="text-muted">릴스 제작을 먼저 실행해주세요.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('릴스 로드 오류:', error);
+            }
+        }
+
+        // 성과 분석 로드
+        async function loadPerformanceAnalytics() {
+            try {
+                const response = await fetch('/api/analytics/performance');
+                const data = await response.json();
+                
+                if (data.success) {
+                    updatePerformanceSummary(data.analytics);
+                    createWeeklyChart(data.analytics.weekly_stats);
+                }
+            } catch (error) {
+                console.error('성과 분석 로드 오류:', error);
+            }
+        }
+
+        // 성과 요약 업데이트
+        function updatePerformanceSummary(analytics) {
+            const container = document.getElementById('performanceSummary');
+            container.innerHTML = `
+                <div class="row g-3 text-center">
+                    <div class="col-6">
+                        <h3 class="text-primary mb-1">${analytics.weekly_stats.news_collected}</h3>
+                        <p class="text-muted mb-0">주간 뉴스 수집</p>
+                    </div>
+                    <div class="col-6">
+                        <h3 class="text-warning mb-1">${analytics.weekly_stats.reels_created}</h3>
+                        <p class="text-muted mb-0">주간 릴스 제작</p>
+                    </div>
+                    <div class="col-6">
+                        <h3 class="text-success mb-1">${analytics.weekly_stats.posts_published}</h3>
+                        <p class="text-muted mb-0">주간 게시물 발행</p>
+                    </div>
+                    <div class="col-6">
+                        <h3 class="text-danger mb-1">${analytics.weekly_stats.success_rate}%</h3>
+                        <p class="text-muted mb-0">성공률</p>
+                    </div>
+                </div>
+                <hr class="my-4">
+                <div>
+                    <h6 class="mb-3">
+                        <i class="fas fa-trophy text-warning me-2"></i>최고 성과 카테고리
+                    </h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        ${analytics.top_categories.map(category => `
+                            <span class="badge bg-primary">${getCategoryName(category)}</span>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // 주간 차트 생성
+        function createWeeklyChart(weeklyStats) {
+            const ctx = document.getElementById('weeklyChart').getContext('2d');
+            
+            if (weeklyChart) {
+                weeklyChart.destroy();
+            }
+            
+            weeklyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['뉴스 수집', '릴스 제작', '게시물 발행'],
+                    datasets: [{
+                        label: '주간 성과',
+                        data: [
+                            weeklyStats.news_collected,
+                            weeklyStats.reels_created,
+                            weeklyStats.posts_published
+                        ],
+                        backgroundColor: [
+                            'rgba(99, 102, 241, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(16, 185, 129, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgb(99, 102, 241)',
+                            'rgb(245, 158, 11)',
+                            'rgb(16, 185, 129)'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 뉴스 상세 보기
+        function showNewsDetail(id, title, summary, category, viralScore) {
+            currentNewsId = id;
+            
+            document.getElementById('newsModalBody').innerHTML = `
+                <div class="mb-4">
+                    <h5 class="mb-3">${title}</h5>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="category-badge">${getCategoryName(category)}</span>
+                        <span class="viral-badge">바이럴 점수: ${viralScore}</span>
+                    </div>
+                    <p class="text-muted mb-4">${summary}</p>
+                    <div class="alert alert-info border-0" style="background: rgba(99, 102, 241, 0.1);">
+                        <i class="fas fa-info-circle text-primary me-2"></i>
+                        이 뉴스로 릴스를 제작하시겠습니까?
+                    </div>
+                </div>
+            `;
+            
+            new bootstrap.Modal(document.getElementById('newsModal')).show();
+        }
+
+        // 릴스 상세 보기
+        function showReelDetail(id, videoUrl, title, style, duration) {
+            currentReelId = id;
+            
+            document.getElementById('reelModalBody').innerHTML = `
+                <div class="mb-4">
+                    <h5 class="mb-3">${title}</h5>
+                    <div class="mb-3">
+                        <span class="badge bg-warning me-2">${style}</span>
+                        <span class="badge bg-info">${duration}초</span>
+                    </div>
+                    <video controls class="w-100 rounded-3" style="max-height: 400px;">
+                        <source src="${videoUrl}" type="video/mp4">
+                        브라우저가 비디오를 지원하지 않습니다.
+                    </video>
+                    <div class="mt-3">
+                        <div class="alert alert-success border-0" style="background: rgba(16, 185, 129, 0.1);">
+                            <i class="fab fa-instagram text-success me-2"></i>
+                            이 릴스를 Instagram에 업로드하시겠습니까?
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            new bootstrap.Modal(document.getElementById('reelModal')).show();
+        }
+
+        // 뉴스에서 릴스 제작
+        async function createReelFromNews() {
+            if (!currentNewsId) return;
+            
+            bootstrap.Modal.getInstance(document.getElementById('newsModal')).hide();
+            showLoading('릴스 제작 중...');
+            addLog(`🎬 뉴스 ID ${currentNewsId}로 릴스를 제작합니다...`, 'info');
+            
+            try {
+                const response = await fetch(`/api/create-reel/${currentNewsId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        news_id: currentNewsId,
+                        video_style: 'trending',
+                        duration: 15,
+                        voice_speed: 1.2,
+                        include_captions: true,
+                        background_music: false
+                    })
+                });
+                
+                const data = await response.json();
+                hideLoading();
+                
+                if (data.success) {
+                    addLog(`✅ 릴스 제작 완료! (${data.file_size_mb}MB)`, 'success');
+                    refreshAllData();
+                } else {
+                    addLog(`❌ 릴스 제작 실패: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                hideLoading();
+                addLog(`❌ 릴스 제작 오류: ${error.message}`, 'error');
+            }
+        }
+
+        // 릴스 Instagram 업로드
+        async function uploadReelToInstagram() {
+            if (!currentReelId) return;
+            
+            bootstrap.Modal.getInstance(document.getElementById('reelModal')).hide();
+            showLoading('Instagram 업로드 중...');
+            addLog(`📱 릴스 ID ${currentReelId}를 Instagram에 업로드합니다...`, 'info');
+            
+            try {
+                const response = await fetch(`/api/post-reel-to-instagram/${currentReelId}`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                hideLoading();
+                
+                if (data.success) {
+                    addLog(`✅ Instagram 업로드 완료! Post ID: ${data.post_id}`, 'success');
+                    if (data.instagram_url) {
+                        addLog(`🔗 Instagram URL: ${data.instagram_url}`, 'info');
+                    }
+                    refreshAllData();
+                } else {
+                    addLog(`❌ Instagram 업로드 실패: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                hideLoading();
+                addLog(`❌ Instagram 업로드 오류: ${error.message}`, 'error');
+            }
+        }
+
+        // 개별 릴스 업로드
+        async function uploadSingleReel(reelId) {
+            showLoading('Instagram 업로드 중...');
+            addLog(`📱 릴스 ID ${reelId}를 Instagram에 업로드합니다...`, 'info');
+            
+            try {
+                const response = await fetch(`/api/post-reel-to-instagram/${reelId}`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                hideLoading();
+                
+                if (data.success) {
+                    addLog(`✅ Instagram 업로드 완료! Post ID: ${data.post_id}`, 'success');
+                    refreshAllData();
+                } else {
+                    addLog(`❌ Instagram 업로드 실패: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                hideLoading();
+                addLog(`❌ Instagram 업로드 오류: ${error.message}`, 'error');
+            }
+        }
+
+        // Instagram 연결 테스트
+        async function testInstagram() {
+            showLoading('Instagram 연결 테스트 중...');
+            addLog('📱 Instagram 연결을 테스트합니다...', 'info');
+            
+            try {
+                const response = await fetch('/api/test-instagram');
+                const data = await response.json();
+                hideLoading();
+                
+                if (data.success) {
+                    addLog(`✅ Instagram 연결 성공: ${data.message}`, 'success');
+                } else {
+                    addLog(`❌ Instagram 연결 실패: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                hideLoading();
+                addLog(`❌ Instagram 테스트 오류: ${error.message}`, 'error');
+            }
+        }
+
+        // 파일 정리
+        async function cleanupFiles() {
+            if (!confirm('7일 이상 된 비디오/오디오 파일을 삭제하시겠습니까?')) return;
+            
+            showLoading('파일 정리 중...');
+            addLog('🧹 오래된 파일을 정리합니다...', 'info');
+            
+            try {
+                const response = await fetch('/api/cleanup/old-files', { method: 'DELETE' });
+                const data = await response.json();
+                hideLoading();
+                
+                if (data.success) {
+                    addLog(`✅ ${data.cleaned_files}개 파일이 정리되었습니다`, 'success');
+                    refreshAllData();
+                } else {
+                    addLog(`❌ 파일 정리 실패: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                hideLoading();
+                addLog(`❌ 파일 정리 오류: ${error.message}`, 'error');
+            }
+        }
+
+        // 데이터 새로고침
+        function refreshData() {
+            addLog('🔄 데이터를 새로고침합니다...', 'info');
+            refreshAllData();
+        }
+
+        // 모든 데이터 초기화
+        async function clearAllData() {
+            if (!confirm('정말로 모든 데이터를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+            
+            showLoading('데이터 초기화 중...');
+            addLog('🗑️ 모든 데이터를 초기화합니다...', 'info');
+            
+            try {
+                const response = await fetch('/api/clear-data', { method: 'DELETE' });
+                const data = await response.json();
+                hideLoading();
+                
+                if (data.success) {
+                    addLog('✅ 모든 데이터가 삭제되었습니다', 'success');
+                    refreshAllData();
+                } else {
+                    addLog(`❌ 데이터 삭제 실패: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                hideLoading();
+                addLog(`❌ 데이터 삭제 오류: ${error.message}`, 'error');
+            }
+        }
+
+        // 모든 데이터 새로고침
+        function refreshAllData() {
+            loadSystemStatus();
+            loadTrendingNews();
+            loadRecentReels();
+            loadPerformanceAnalytics();
+        }
+
+        // 유틸리티 함수들
+        function getCategoryName(category) {
+            const categoryNames = {
+                'stock': '주식·경제',
+                'politics': '정치',
+                'international': '해외 이슈',
+                'domestic': '국내 이슈',
+                'technology': '기술·IT',
+                'entertainment': '연예·스포츠'
+            };
+            return categoryNames[category] || category;
+        }
+
+        function formatDateTime(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString('ko-KR', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        // 탭 전환 이벤트
+        document.addEventListener('shown.bs.tab', function (e) {
+            const target = e.target.getAttribute('href');
+            
+            if (target === '#newsTab') {
+                loadTrendingNews();
+            } else if (target === '#reelsTab') {
+                loadRecentReels();
+            } else if (target === '#analyticsTab') {
+                loadPerformanceAnalytics();
+            }
+        });
+    </script>
+</body>
+</html>
