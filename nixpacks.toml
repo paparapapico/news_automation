@@ -1,5 +1,0 @@
-[variables] 
-PORT = "8000" 
- 
-[start] 
-cmd = "uvicorn clean_news_automation:app --host 0.0.0.0 --port 8000" 

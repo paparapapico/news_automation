@@ -1462,7 +1462,7 @@ async def scrape_news_api(request: NewsRequest):
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+    return {"status": "healthy", "service": "news_automation"}
 
 @app.post("/api/create-reel/{news_id}")
 async def create_reel_api(news_id: int, request: ReelsRequest):
@@ -2055,4 +2055,7 @@ if __name__ == "__main__":
     # 수정된 코드:
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("clean_news_automation:app", host="127.0.0.1", port=8000, reload=True)
+    import os
+    
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("clean_news_automation:app", host="0.0.0.0", port=port, reload=False)

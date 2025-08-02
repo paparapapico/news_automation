@@ -67,6 +67,9 @@ credentials.json
 ehthumbs.db
 Thumbs.db
 
+# PythonAnywhere specific
+.pythonanywhere.yml
+
 # Media Files (optional - 용량이 클 수 있음)
 *.mp4
 *.avi
@@ -78,9 +81,6 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
-
-# Node modules (if any)
-node_modules/
 
 # Coverage reports
 htmlcov/
