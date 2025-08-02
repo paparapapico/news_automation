@@ -1,5 +1,6 @@
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
+uvicorn[standard]==0.24.0
 PyJWT==2.8.0
 cryptography==41.0.7
 python-jose[cryptography]==3.3.0
@@ -24,6 +25,12 @@ imageio-ffmpeg==0.4.9
 openai==1.3.7
 pandas==2.1.4
 numpy==1.24.4
+gunicorn==21.2.0
+gtts==2.4.0
+pydub==0.25.1
+speechrecognition==3.10.0
+pygame==2.5.2
+mutagen==1.47.0
 gunicorn==21.2.0
 gtts==2.4.0
 pydub==0.25.1
