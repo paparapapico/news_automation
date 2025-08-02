@@ -38,6 +38,21 @@ import base64
 import shutil
 
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# 환경 감지
+ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
+IS_RENDER = bool(os.getenv('RENDER'))
+IS_PRODUCTION = ENVIRONMENT == 'production' or IS_RENDER
+
+if IS_RENDER:
+    logger.info("🌐 Render 환경에서 실행 중")
+    # Render 환경에서는 일부 기능 제한
+    DEBUG = False
+else:
+    logger.info("💻 로컬 환경에서 실행 중")
+
 
 # OpenAI 가져오기
 try:
@@ -1189,7 +1204,11 @@ class AdvancedInstagramService:
 def init_enhanced_db():
     """향상된 데이터베이스 초기화"""
     try:
-        conn = sqlite3.connect("news_automation.db")
+        # 데이터베이스 파일 경로 확인
+        db_path = "news_automation.db"
+        logger.info(f"데이터베이스 초기화: {db_path}")
+        
+        conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         
         # 기존 뉴스 테이블 (title_hash 컬럼 추가)
@@ -1307,11 +1326,29 @@ def init_enhanced_db():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("🚀 ADVANCED NEWS AUTOMATION - AI 뉴스 & 릴스 자동화 플랫폼 시작")
-    init_enhanced_db()
+    
+    # DB 초기화 (실패해도 계속 진행)
+    try:
+        init_enhanced_db()
+    except Exception as e:
+        logger.error(f"DB 초기화 실패: {e}")
+    
+    # 필요한 디렉토리 생성
+    for directory in [UPLOAD_DIR, VIDEO_OUTPUT_DIR, AUDIO_OUTPUT_DIR, TEMP_DIR]:
+        try:
+            os.makedirs(directory, exist_ok=True)
+            logger.info(f"✅ 디렉토리 생성: {directory}")
+        except Exception as e:
+            logger.warning(f"⚠️ 디렉토리 생성 실패: {directory} - {e}")
+    
     yield
+    
     # 앱 종료 시 세션 정리
-    if hasattr(app.state, 'news_scraper'):
-        await app.state.news_scraper.close()
+    try:
+        if hasattr(app.state, 'news_scraper'):
+            await app.state.news_scraper.close()
+    except Exception as e:
+        logger.error(f"세션 정리 오류: {e}")
 
 app = FastAPI(
     title="ADVANCED NEWS AUTOMATION", 
@@ -1329,17 +1366,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.get("/favicon.ico", include_in_schema=False)
+@app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
     # 기본 빈 응답 또는 실제 favicon 파일 반환
     return Response(status_code=204)
 
 # 정적 파일 서빙
 try:
+    # 디렉토리 생성 확인
+    os.makedirs(VIDEO_OUTPUT_DIR, exist_ok=True)
+    os.makedirs(AUDIO_OUTPUT_DIR, exist_ok=True)
+    
+    # 정적 파일 마운트
     app.mount("/generated_videos", StaticFiles(directory=VIDEO_OUTPUT_DIR), name="videos")
     app.mount("/generated_audio", StaticFiles(directory=AUDIO_OUTPUT_DIR), name="audio")
+    logger.info(f"✅ 정적 파일 마운트 완료: {VIDEO_OUTPUT_DIR}, {AUDIO_OUTPUT_DIR}")
 except Exception as e:
-    logger.warning(f"정적 파일 마운트 실패: {e}")
+    logger.warning(f"⚠️ 정적 파일 마운트 실패: {e}")
+    # 실패해도 앱은 계속 실행
 
 # 서비스 인스턴스
 news_scraper = None
@@ -1475,8 +1519,65 @@ async def scrape_news_api(request: NewsRequest):
         return {"success": False, "error": str(e)}
 
 @app.get("/health")
-async def health_check():
-    return {"status": "healthy", "service": "news_automation"}
+async def enhanced_health_check():
+    """향상된 시스템 상태 확인"""
+    try:
+        conn = sqlite3.connect("news_automation.db")
+        cursor = conn.cursor()
+        
+        cursor.execute("SELECT COUNT(*) FROM news_articles")
+        total_news = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) FROM news_reels")
+        total_reels = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) FROM news_posts WHERE status = 'posted'")
+        posted_content = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT AVG(viral_score) FROM news_articles WHERE datetime(scraped_at) > datetime('now', '-1 days')")
+        avg_viral_score = cursor.fetchone()[0] or 0
+        
+        conn.close()
+        
+        generator = get_content_generator()
+        
+        # 디스크 사용량 확인
+        video_dir_size = 0
+        try:
+            if os.path.exists(VIDEO_OUTPUT_DIR):
+                video_dir_size = sum(os.path.getsize(os.path.join(VIDEO_OUTPUT_DIR, f)) 
+                                   for f in os.listdir(VIDEO_OUTPUT_DIR) 
+                                   if os.path.isfile(os.path.join(VIDEO_OUTPUT_DIR, f)))
+        except:
+            pass
+        video_dir_size_mb = video_dir_size / (1024 * 1024)
+        
+        return {
+            "status": "healthy",
+            "database": "connected",
+            "environment": "render" if os.getenv('RENDER') else "local",
+            "services": {
+                "news_scraper": "active",
+                "reels_producer": "active", 
+                "content_generator": "active",
+                "openai_available": generator.openai_client is not None,
+                "static_files": os.path.exists(VIDEO_OUTPUT_DIR)
+            },
+            "statistics": {
+                "total_news": total_news,
+                "total_reels": total_reels,
+                "posted_content": posted_content,
+                "avg_viral_score": round(avg_viral_score, 2),
+                "video_storage_mb": round(video_dir_size_mb, 1)
+            },
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
 
 @app.post("/api/create-reel/{news_id}")
 async def create_reel_api(news_id: int, request: ReelsRequest):
@@ -2057,19 +2158,25 @@ if __name__ == "__main__":
     print(f"📊 대시보드: http://{HOST}:{PORT}/dashboard")
     print(f"📚 API 문서: http://{HOST}:{PORT}/docs")
     print("=" * 80)
-    print("🎯 새로운 기능:")
-    print("  • ✅ 다중 소스 뉴스 크롤링 (Google News)")
+    
+    if IS_RENDER:
+        print("🌐 Render 환경에서 실행")
+    else:
+        print("💻 로컬 환경에서 실행")
+    
+    print("🎯 주요 기능:")
+    print("  • ✅ 다중 소스 뉴스 크롤링")
     print("  • ✅ AI 바이럴 캡션 생성")
-    print("  • ✅ 자동 릴스 제작 (TTS + 비주얼)")
+    print("  • ✅ 자동 릴스 제작")
     print("  • ✅ Instagram 릴스 자동 업로드")
-    print("  • ✅ 바이럴 점수 기반 우선순위")
-    print("  • ✅ 성과 분석 및 모니터링")
     print("=" * 80)
     
-    # 수정된 코드:
-if __name__ == "__main__":
-    import uvicorn
-    import os
+    # 포트 설정 - Render 환경 고려
+    port = int(os.environ.get("PORT", PORT))
     
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("clean_news_automation:app", host="0.0.0.0", port=port, reload=False)
+    uvicorn.run(
+        "clean_news_automation:app", 
+        host="0.0.0.0",  # Render에서는 0.0.0.0 필수
+        port=port, 
+        reload=not IS_PRODUCTION  # 프로덕션에서는 reload 비활성화
+    )
