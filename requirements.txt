@@ -1,39 +1,54 @@
+# Railway 배포 최적화 - 오류 해결
+# Core FastAPI
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
-uvicorn[standard]==0.24.0
+
+# Authentication & Security
 PyJWT==2.8.0
-cryptography==41.0.7
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
+
+# HTTP & Async
 aiohttp==3.9.1
 aiofiles==23.2.0
 httpx==0.25.2
 requests==2.31.0
+
+# Web Scraping
 beautifulsoup4==4.12.2
 lxml==4.9.3
-python-multipart==0.0.6
-sqlalchemy==2.0.23
-python-dotenv==1.0.0
-schedule==1.2.0
 feedparser==6.0.10
-newspaper3k==0.2.8
+
+# File Handling
+python-multipart==0.0.6
+python-dotenv==1.0.0
+
+# Image & Video Processing (Railway 최적화)
 opencv-python-headless==4.8.1.78
-pillow==10.1.0
-moviepy==1.0.3
+Pillow==10.1.0
 imageio==2.33.1
-imageio-ffmpeg==0.4.9
+
+# AI & ML
 openai==1.3.7
+
+# Data Processing
 pandas==2.1.4
 numpy==1.24.4
-gunicorn==21.2.0
+
+# Audio Processing (간소화 - ALSA 오류 방지)
 gtts==2.4.0
-pydub==0.25.1
-speechrecognition==3.10.0
-pygame==2.5.2
-mutagen==1.47.0
+
+# Production Server
 gunicorn==21.2.0
-gtts==2.4.0
-pydub==0.25.1
-speechrecognition==3.10.0
-pygame==2.5.2
-mutagen==1.47.0
+
+# 제거된 패키지들 (Railway 환경에서 문제 발생):
+# - moviepy (ffmpeg 의존성 문제)
+# - pydub (오디오 의존성 문제)
+# - speechrecognition (마이크 의존성 문제)
+# - pygame (GUI 의존성 문제)
+# - mutagen (오디오 메타데이터 - 불필요)
+# - newspaper3k (의존성 충돌)
+# - cryptography (python-jose에 포함)
+# - imageio-ffmpeg (Railway에서 문제)
+# - sqlalchemy (현재 사용하지 않음)
+# - schedule (현재 사용하지 않음)
