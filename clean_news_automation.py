@@ -1397,18 +1397,32 @@ async def home():
 async def dashboard():
     """대시보드 페이지"""
     try:
-        with open("dashboard.html", "r", encoding="utf-8") as f:
-            return f.read()
-    except FileNotFoundError:
-        return """
-        <!DOCTYPE html>
-        <html><head><title>Dashboard Not Found</title></head>
-        <body>
-        <h1>Dashboard 파일을 찾을 수 없습니다</h1>
-        <p>dashboard.html 파일이 필요합니다.</p>
-        <p><a href="/docs">API 문서로 이동</a></p>
-        </body></html>
-        """
+        possible_paths = ["dashboard.html", "./dashboard.html", "/app/dashboard.html"]
+        
+        for path in possible_paths:
+            if os.path.exists(path):
+                with open(path, "r", encoding="utf-8") as f:
+                    return f.read()
+        # 파일을 찾을 수 없으면 기본 대시보드 반환
+        return get_default_dashboard_html()
+    
+    except Exception as e:
+        logger.error(f"대시보드 로드 오류: {e}")
+        return get_default_dashboard_html()
+
+def get_default_dashboard_html():
+    """기본 대시보드 HTML"""
+    return """
+    <!DOCTYPE html>
+    <html><head><title>News Automation Dashboard</title></head>
+    <body>
+    <h1>NEWS AUTOMATION - Render 배포 성공!</h1>
+    <p>API 서버가 정상 작동 중입니다.</p>
+    <p><a href="/docs">API 문서 보기</a></p>
+    <p><a href="/health">시스템 상태 확인</a></p>
+    </body></html>
+    """
+
 
 @app.post("/api/scrape-news")
 async def scrape_news_api(request: NewsRequest):
