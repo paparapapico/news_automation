@@ -133,3 +133,5 @@ news-automation/
 ## 📞 문의
 
 프로젝트 관련 문의사항이 있으시면 이슈를 생성해주세요.
+# news_automation
+good
