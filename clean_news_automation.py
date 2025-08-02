@@ -854,42 +854,23 @@ async def home():
 
 @app.get("/health")
 async def health_check():
-    """시스템 상태 확인"""
+    """간단하고 빠른 헬스체크 - Railway 최적화"""
     try:
-        system_info = {
-            "status": "healthy",
-            "environment": f"{'Railway' if IS_RAILWAY else 'Render' if IS_RENDER else 'Local'}",
-            "port": PORT,
-            "services": {
-                "news_scraper": "active",
-                "reels_producer": "active (OpenCV)",
-                "moviepy_removed": True,
-                "tts_available": TTS_AVAILABLE,
-            },
-            "timestamp": datetime.now().isoformat()
-        }
-        
-        # 데이터베이스 연결 확인
-        try:
-            conn = sqlite3.connect("news_automation.db")
-            cursor = conn.cursor()
-            cursor.execute("SELECT COUNT(*) FROM news_articles")
-            total_news = cursor.fetchone()[0]
-            conn.close()
-            
-            system_info["database"] = "connected"
-            system_info["statistics"] = {"total_news": total_news}
-            
-        except Exception as db_error:
-            system_info["database"] = f"error: {str(db_error)}"
-        
-        return system_info
-        
-    except Exception as e:
+        # 즉시 응답 (DB 체크 없이)
         return {
-            "status": "error",
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "environment": "Railway" if IS_RAILWAY else "Local",
+            "port": PORT,
+            "message": "OK"
+        }
+    except Exception as e:
+        # 오류가 있어도 200 응답
+        return {
+            "status": "warning",
+            "timestamp": datetime.now().isoformat(),
             "error": str(e),
-            "timestamp": datetime.now().isoformat()
+            "message": "OK"
         }
 
 @app.get("/dashboard", response_class=HTMLResponse)
