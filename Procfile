@@ -1,1 +1,1 @@
-web: uvicorn clean_news_automation:app --host 0.0.0.0 --port $PORT
+web: ./start.sh
