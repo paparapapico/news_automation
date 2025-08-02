@@ -1,4 +1,4 @@
-# Dockerfile for Railway deployment
+# Railway용 Dockerfile - 포트 문제 해결
 FROM python:3.11-slim
 
 # 시스템 패키지 설치
@@ -24,8 +24,12 @@ COPY . .
 # 필요한 디렉토리 생성
 RUN mkdir -p uploads generated_videos generated_audio temp
 
-# 포트 노출
-EXPOSE 8000
+# Railway 환경 설정
+ENV RAILWAY=true
+ENV ENVIRONMENT=production
 
-# 애플리케이션 실행
-CMD ["uvicorn", "clean_news_automation:app", "--host", "0.0.0.0", "--port", "8000"]
+# 포트 설정 - Railway가 자동으로 제공
+EXPOSE $PORT
+
+# 애플리케이션 실행 - Railway 포트 사용
+CMD uvicorn clean_news_automation:app --host 0.0.0.0 --port ${PORT:-8000}

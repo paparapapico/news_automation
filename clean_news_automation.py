@@ -2323,16 +2323,12 @@ async def clear_data():
         return {"success": False, "error": str(e)}
 
 if __name__ == "__main__":
-    print("🚀 ADVANCED NEWS AUTOMATION - AI 뉴스 & 릴스 자동화 플랫폼")
+    print("🚀 RAILWAY NEWS AUTOMATION - AI 뉴스 & 릴스 자동화 플랫폼")
+    print(f"🌐 환경: {'Railway' if IS_RAILWAY else 'Local'}")
     print(f"📱 API 서버: http://{HOST}:{PORT}")
     print(f"📊 대시보드: http://{HOST}:{PORT}/dashboard")
     print(f"📚 API 문서: http://{HOST}:{PORT}/docs")
     print("=" * 80)
-    
-    if IS_RENDER:
-        print("🌐 Render 환경에서 실행")
-    else:
-        print("💻 로컬 환경에서 실행")
     
     print("🎯 주요 기능:")
     print("  • ✅ 다중 소스 뉴스 크롤링")
@@ -2341,12 +2337,14 @@ if __name__ == "__main__":
     print("  • ✅ Instagram 릴스 자동 업로드")
     print("=" * 80)
     
-    # 포트 설정 - Render 환경 고려
-    port = int(os.environ.get("PORT", PORT))
-    
-    uvicorn.run(
-        app,  # 문자열이 아닌 app 객체 직접 전달
-        host="0.0.0.0",  # Render에서는 0.0.0.0 필수
-        port=port, 
-        reload=False  # 프로덕션에서는 reload 비활성화
-    )
+    # Railway 환경에서는 uvicorn.run 사용하지 않음
+    if not IS_RAILWAY:
+        uvicorn.run(
+            app,
+            host=HOST,
+            port=PORT, 
+            reload=DEBUG
+        )
+    else:
+        # Railway에서는 gunicorn이나 uvicorn 명령어로 실행
+        print("Railway 환경에서 실행 중...")
